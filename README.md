@@ -1,8 +1,8 @@
 # Path Constructor
 
 ## English description
-###Program to automatically create paths for X - Ray Engine 1.6.00 - 02.
-###About the authors:
+### Program to automatically create paths for X - Ray Engine 1.6.00 - 02.
+### About the authors:
 
 Leonid Kushnaryov - algorithm for generating paths from read coordinates
 

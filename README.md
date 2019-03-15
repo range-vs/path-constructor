@@ -2,8 +2,11 @@
 
 ## English description
 Program to automatically create paths for X - Ray Engine 1.6.00 - 02.
+
 About the authors:
+
 Leonid Kushnaryov - algorithm for generating paths from read coordinates
+
 I, [Daniil Borchev](https://github.com/daniilborschev) - an algorithm for copying and assembling spawn according to a given location
 
 ## Program
@@ -27,8 +30,11 @@ To work correctly, the program requires
 
 ## Русское описание
 Программа для автоматического создания путей для X - Ray Engine 1.6.00 - 02.
+
 Об авторах:
+
 Леонид Кушнарёв - алгоритм генерации путей по считанным координатам
+
 Я, [Daniil Borchev](https://github.com/daniilborschev) - алгоритм копирования и сборки спавна в соответствии с заданной локацией
 
 ## Программа

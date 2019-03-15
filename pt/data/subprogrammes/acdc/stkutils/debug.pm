@@ -1,0 +1,1 @@
+package stkutils::debug;use strict;use vars qw(@ISA @EXPORT_OK);require Exporter;@ISA		= qw(Exporter);@EXPORT_OK	= qw(fail warn);sub fail {	die "\nFATAL ERROR!\nFunction: $_[0]\nLine: $_[1]\nExpression: $_[2]\nDescription: $_[3]\n";}sub warn {	warn "\nWarning!\nFunction: $_[0]\nLine: $_[1]\nExpression: $_[2]\nDescription: $_[3]\n";}1;

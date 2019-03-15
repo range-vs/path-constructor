@@ -1,0 +1,213 @@
+--[[
+	Описание:	Вспомогательный инструмент для создания путей.
+	Автор: 		ColR_iT, адаптация для ЗП inelisoni aka Real Wolf
+	Лог изменений:
+		09.03.2016 - Адаптация под ЗП, рефакторинг.
+--]]
+
+local pathName
+local CurrentPath
+local isAdd = false
+
+class "EditDialog" (CUIScriptWnd)
+
+function EditDialog:__init() super()
+	self:InitControls()
+	self:InitCallBacks()
+end
+
+function EditDialog:__finalize () end
+
+function EditDialog:InitControls ()
+	self:SetWndRect(Frect():set(300, 300, 700, 600))
+	
+	local xml = CScriptXmlInit()
+	xml:ParseFile("ui_path_constructor.xml")
+	xml:InitStatic("background", self)
+	xml:InitStatic("lbl_textbox", self)
+	xml:InitStatic("lbl_attention", self)
+	
+	self:Register(xml:Init3tButton("btn_save", self), "btn_save")
+	
+	self.btnQuit = xml:Init3tButton("btn_quit", self)
+	self:Register(self.btnQuit, "btn_quit")
+	
+	self.textBox = xml:InitEditBox("textbox", self)
+	self:Register(self.textBox, "textbox")
+end
+
+function EditDialog:InitCallBacks ()
+	self:AddCallback("btn_save", ui_events.BUTTON_CLICKED, self.OnSave, self)
+	self:AddCallback("btn_quit", ui_events.BUTTON_CLICKED, self.OnQuit, self)
+end
+
+function EditDialog:OnKeyboard (dik, keyboard_action)
+	CUIScriptWnd.OnKeyboard(self, dik, keyboard_action)
+	
+	if keyboard_action == ui_events.WINDOW_KEY_PRESSED then
+		if dik == DIK_keys.DIK_ESCAPE then
+			self:OnQuit()
+		end
+		if dik == DIK_keys.DIK_RETURN then
+			self:OnSave()
+		end
+	end
+	return true
+end
+
+function EditDialog:OnSave ()	
+	if self:IsGameRunning() then
+		local text = self.textBox:GetText()
+		if ((string.len(text) > 30) or (string.len(text) == 0)) then 
+			news_manager.send_tip(db.actor, "ERROR! Не задано имя пути либо символов больше 30!")
+		else
+			pathName = text
+			news_manager.send_tip(db.actor, "Начало построения патрульного пути "..pathName..".")
+			isAdd = true
+			CurrentPath = {}
+		end
+	else
+		log1("ERROR! Игра не загружена!")
+	end
+	self:OnQuit()
+end
+
+function EditDialog:OnQuit ()
+	self:HideDialog()
+end
+
+function EditDialog:IsGameRunning ()
+	if level.present() and (db.actor ~= nil) and db.actor:alive() then
+		return true
+	else
+		return false
+	end
+end
+
+local walkIndex = 0
+local lookIndex = 0
+local flags = 1
+
+function NewPath ()
+	if walkIndex ~= 0 then
+		news_manager.send_tip(db.actor, "ERROR! Не завершён предыдущий путь!")
+		log1("!!Error. Not finished preview path!")
+		return
+	end
+	local TextBox = EditDialog()
+	TextBox:ShowDialog(true)
+end
+
+function AddPointWalk ()
+	if not isAdd then
+		news_manager.send_tip(db.actor, "ERROR! Не определено имя пути!")
+		log1("!!Not defined pathname!")
+		return
+	end
+	CurrentPath[walkIndex] = {}
+	CurrentPath[walkIndex].walk = {
+		position = db.actor:position(),
+		lv = db.actor:level_vertex_id(),
+		gv = db.actor:game_vertex_id(),
+	}
+	walkIndex = walkIndex + 1
+	news_manager.send_tip(db.actor, "Добавлена точка walk.")
+end
+
+function AddPointLook ()
+	if not isAdd then
+		news_manager.send_tip(db.actor, "ERROR! Не определено имя пути!")
+		log1("!!Not defined pathname!")
+		return
+	end
+	if CurrentPath[walkIndex - 1] == nil then
+		news_manager.send_tip(db.actor, "ERROR! Не задана точка пути walk!")
+		log1("!!Not defined waypoint walk!")
+		return
+	end
+	if CurrentPath[walkIndex - 1].look == nil then
+		CurrentPath[walkIndex - 1].walk.flags = flags
+		flags = flags * 2
+		CurrentPath[walkIndex - 1].look = {}
+	end
+	
+	local lvID = level.vertex_in_direction(db.actor:level_vertex_id(), device().cam_dir, 50)
+	local lvPosition = level.vertex_position(lvID)
+	
+	CurrentPath[walkIndex - 1].look[lookIndex] = {
+		position = lvPosition,
+		lv = lvID,
+		gv = db.actor:game_vertex_id(),
+		flags = flags / 2,
+	}
+	lookIndex = lookIndex + 1
+	news_manager.send_tip(db.actor, "Добавлена точка look.")
+end
+
+function PrintPath ()
+	local point = {}
+	local printString = "<[PathConstructor "..pathName..":\n"
+	local SEP = ":"
+	indexLook = 0
+	for index = 0, walkIndex - 1 do
+		local pos, lv, gv, flags
+-- #----- WALK -----#--
+		pos = CurrentPath[index].walk.position
+		lv = CurrentPath[index].walk.lv
+		gv = CurrentPath[index].walk.gv
+		flags = CurrentPath[index].walk.flags
+		point = {"walk", index, pos.x..","..pos.y..","..pos.z, gv, lv, flags}
+		printString = printString..table.concat(point, SEP).."\n"
+-- #----------------#--
+-- #----- LOOK -----#--
+		if flags then
+			for li = 0, lookIndex - 1 do
+				if CurrentPath[index].look[li] then
+					pos = CurrentPath[index].look[li].position
+					lv = CurrentPath[index].look[li].lv
+					gv = CurrentPath[index].look[li].gv
+					flags = CurrentPath[index].look[li].flags
+					point = {"look", li, pos.x..","..pos.y..","..pos.z, gv, lv, flags}
+					printString = printString..table.concat(point, SEP).."\n"
+				end
+			end
+		end
+-- #----------------#--
+	end
+	printString = printString.."PathConstructor]>"
+	log1(printString)
+end
+
+function PathComplite ()
+	if pathName then
+		isAdd = false
+		PrintPath()
+		walkIndex = 0
+		lookIndex = 0
+		flags = 1
+		news_manager.send_tip(db.actor, "Построение пути "..pathName.." завершено.")
+	end
+end
+
+local Keys = {
+	[79] = NewPath,			-- "Numpad1"
+	-- [80] = "Numpad2",
+	-- [81] = "Numpad3",
+	-- [75] = "Numpad4",
+	-- [76] = "Numpad5",
+	-- [77] = "Numpad6",
+	[71] = AddPointWalk,	-- "Numpad7",
+	-- [72] = "Numpad8",
+	[73] = AddPointLook,	-- "Numpad9",
+	[82] = PathComplite,	-- "Numpad0"
+}
+
+function Update(evt)
+	if Keys[evt.key] then
+		Keys[evt.key]()
+	end
+end
+
+function init_callbacks()
+	event("actor_key_press"):register(Update)
+end

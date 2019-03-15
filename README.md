@@ -23,10 +23,10 @@ To work correctly, the program requires
 * Copy the script from the xray_script / nnm_path_constructor.script folder (located in the program root) to the gamedata / scripts folder
 * Registration - AS, todo
 * Designer control:
-    * NumPad1 - start recording the path
-    * NumPad7 - add waypoint
-    * NumPad9 - add point of view
-    * NumPad0 - finish recording the path
+   * NumPad1 - start recording the path
+   * NumPad7 - add waypoint
+   * NumPad9 - add point of view
+   * NumPad0 - finish recording the path
 
 ## Русское описание
 Программа для автоматического создания путей для X - Ray Engine 1.6.00 - 02.

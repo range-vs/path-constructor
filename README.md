@@ -1,9 +1,8 @@
 # Path Constructor
 
 ## English description
-Program to automatically create paths for X - Ray Engine 1.6.00 - 02.
-
-About the authors:
+###Program to automatically create paths for X - Ray Engine 1.6.00 - 02.
+###About the authors:
 
 Leonid Kushnaryov - algorithm for generating paths from read coordinates
 
@@ -11,7 +10,7 @@ I, [Daniil Borchev](https://github.com/daniilborschev) - an algorithm for copyin
 
 ## Program
 To work correctly, the program requires
-  1) To get the path, install the script into the game and use. Script description later
+* To get the path, install the script into the game and use. Script description later
   2) Configure the path to the game (this folder will be searched for fsgame, which will contain the log file)
   3) Configure the path to the spam folder
   4) The program, if there is a log file in the specified folder, loads information about new paths into the output window itself.
